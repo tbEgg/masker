@@ -1,0 +1,11 @@
+{
+    "port": 4444,
+    "listener": {
+        "protocol": "mask",
+        "config": "mask_listener.json"
+    },
+    "caller": {
+        "protocol": "identical",
+        "config": "noneed"
+    }
+}

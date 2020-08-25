@@ -1,0 +1,11 @@
+{
+    "port": 3333,
+    "listener": {
+        "protocol": "socks",
+        "config": "socks_config.json"
+    },
+    "caller": {
+        "protocol": "mask",
+        "config": "mask_caller.json"
+    }
+}
