@@ -6,9 +6,9 @@ import (
 	"./core"
 	"./log"
 
-	_ "./protocol/socks"
-	_ "./protocol/masker"
-	_ "./protocol/identical"
+	_ "./proxy/socks"
+	_ "./proxy/masker"
+	_ "./proxy/identical"
 )
 
 var (
