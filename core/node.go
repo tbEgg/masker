@@ -16,7 +16,7 @@ type Listener interface {
 }
 
 type Caller interface {
-	Call(FullDuplexChannel, network.Address) error
+	Call(FullDuplexChannel, network.Destination) error
 }
 
 type ListenerConstructor interface {
@@ -73,7 +73,7 @@ func (node *Node) Start() error {
 	return node.ListenEnd.Listen(node.Config.Port)
 }
 
-func (node *Node) NewConnectionAccept(dest network.Address) (FullDuplexChannel, error) {
+func (node *Node) NewConnectionAccept(dest network.Destination) (FullDuplexChannel, error) {
 	channel := NewFullDuplexChannel()
 	go node.CallEnd.Call(channel, dest)
 	return channel, nil

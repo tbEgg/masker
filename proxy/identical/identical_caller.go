@@ -18,10 +18,10 @@ func NewIdenticalCaller(configFile string) (*IdenticalCaller, error) {
 	}, nil
 }
 
-func (caller *IdenticalCaller) Call(channel core.FullDuplexChannel, dest network.Address) error {
-	conn, err := net.Dial("tcp", dest.String())
+func (caller *IdenticalCaller) Call(channel core.FullDuplexChannel, dest network.Destination) error {
+	conn, err := net.Dial(dest.Network(), dest.String())
 	if err != nil {
-		log.Error("Err in opening tcp connection: %v.", err)
+		log.Error("Err in opening %s connection: %v.", dest.Network(), err)
 		return err
 	}
 	log.Info("Connecting to %s succeed.", dest.String())

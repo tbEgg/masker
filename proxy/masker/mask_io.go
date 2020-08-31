@@ -14,15 +14,21 @@ import (
 	"../../cryption"
 )
 
+const (
+	addrTypeIPv4   = byte(0x01)
+	addrTypeIPv6   = byte(0x03)
+	addrTypeDomain = byte(0x02)
+)
+
 type maskRequest struct{
 	userID			*account.ID
 	requestKey		[16]byte
 	requestIV		[16]byte
 	responseHeader	[4]byte
-	dest			network.Address
+	dest			network.Destination
 }
 
-func newMaskRequest(u account.User, dest network.Address) *maskRequest {
+func newMaskRequest(u account.User, dest network.Destination) *maskRequest {
 	r := &maskRequest{
 		userID:	u.Id,
 		dest: 	dest,
@@ -124,8 +130,9 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 	if err != nil {
 		return
 	}
+	var addr network.Address
 	switch buffer[0] {
-	case network.AddrTypeIPv4:
+	case addrTypeIPv4:
 		nBytes, err = decryptReader.Read(buffer[1:5])
 		if err != nil {
 			return
@@ -134,8 +141,12 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 			err = fmt.Errorf("Unable read complete ip, want 4, get %d", nBytes)
 			return
 		}
-		request.dest = network.NewIPAddress(buffer[1:5], port)
-	case network.AddrTypeIPv6:
+
+		addr, err = network.NewIPv4Address(buffer[1:5], port)
+		if err != nil {
+			return
+		}
+	case addrTypeIPv6:
 		nBytes, err = decryptReader.Read(buffer[1:17])
 		if err != nil {
 			return
@@ -144,8 +155,12 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 			err = fmt.Errorf("Unable read complete ip, want 16, get %d", nBytes)
 			return
 		}
-		request.dest = network.NewIPAddress(buffer[1:17], port)
-	case network.AddrTypeDomain:
+		
+		addr, err = network.NewIPv6Address(buffer[1:17], port)
+		if err != nil {
+			return
+		}
+	case addrTypeDomain:
 		_, err = decryptReader.Read(buffer[1:2])
 		if err != nil {
 			return
@@ -160,16 +175,12 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 			err = fmt.Errorf("Unable read complete domain, want %d, get %d", domainLen, nBytes)
 			return
 		}
-		request.dest = network.NewDomainAddress(string(buffer[2:2 + domainLen]), port)
+		addr = network.NewDomainAddress(string(buffer[2:2 + domainLen]), port)
 	default:
 		err = fmt.Errorf("Unsupported address type: %v", buffer[0])
 		return
 	}
-
-	if request.dest.Type == network.AddrTypeErr {
-		err = fmt.Errorf("Illegal address: %v", request.dest)
-		return
-	}
+	request.dest = network.NewTCPDestination(addr)
 
 	// skip random padding
 	if err = skipRandomPadding(); err != nil {
@@ -206,21 +217,20 @@ func (r *maskRequest) encryptedByteSlice() ([]byte, error) {
 	buffer = append(buffer, r.responseHeader[:]...)
 
 	// add dest address
-	portBuffer := make([]byte, 2)
-	binary.BigEndian.PutUint16(portBuffer, r.dest.Port)
-	buffer = append(buffer, portBuffer...)
+	buffer = append(buffer, r.dest.PortByteSlice()...)
 
-	switch r.dest.Type {
-	case network.AddrTypeIPv4:
-		buffer = append(buffer, network.AddrTypeIPv4)
-		buffer = append(buffer, r.dest.IP...)
-	case network.AddrTypeIPv6:
-		buffer = append(buffer, network.AddrTypeIPv6)
-		buffer = append(buffer, r.dest.IP...)
-	case network.AddrTypeDomain:
-		buffer = append(buffer, network.AddrTypeDomain)
-		buffer = append(buffer, byte(len(r.dest.Domain)))
-		buffer = append(buffer, []byte(r.dest.Domain)...)
+	switch {
+	case r.dest.IsIPv4():
+		buffer = append(buffer, addrTypeIPv4)
+		buffer = append(buffer, r.dest.IP()...)
+	case r.dest.IsIPv6():
+		buffer = append(buffer, addrTypeIPv6)
+		buffer = append(buffer, r.dest.IP()...)
+	case r.dest.IsDomain():
+		buffer = append(buffer, addrTypeDomain)
+		domain := []byte(r.dest.Domain())
+		buffer = append(buffer, byte(len(domain)))
+		buffer = append(buffer, domain...)
 	}
 
 	// add random padding

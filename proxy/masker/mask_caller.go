@@ -19,7 +19,7 @@ type MaskCaller struct {
 }
 
 type nextNode struct {
-	address		network.Address	// node ip address
+	destination	network.Destination	// node ip address
 	userList	[]account.User	// users that node allows to access
 }
 
@@ -52,15 +52,15 @@ func NewMaskCaller(configFile string) (*MaskCaller, error) {
  * dest: final target address
  *
 */
-func (caller *MaskCaller) Call(channel core.FullDuplexChannel, dest network.Address) error {
-	nextNodeAddress, chosenUser := caller.pickNextNode()
+func (caller *MaskCaller) Call(channel core.FullDuplexChannel, dest network.Destination) error {
+	nextNodeDestination, chosenUser := caller.pickNextNode()
 	
-	conn, err := net.Dial("tcp", nextNodeAddress.String())
+	conn, err := net.Dial(nextNodeDestination.Network(), nextNodeDestination.String())
 	if err != nil {
-		log.Error("Err in opening tcp connection: %v.", err)
+		log.Error("Err in opening %s connection: %v.", nextNodeDestination.Network(), err)
 		return err
 	}
-	log.Info("Connecting to %s succeed.", nextNodeAddress.String())
+	log.Info("Connecting to %s succeed.", nextNodeDestination.String())
 
 	request := newMaskRequest(chosenUser, dest)
 
@@ -74,14 +74,14 @@ func (caller *MaskCaller) Call(channel core.FullDuplexChannel, dest network.Addr
 	return nil
 }
 
-func (caller *MaskCaller) pickNextNode() (network.Address, account.User) {
+func (caller *MaskCaller) pickNextNode() (network.Destination, account.User) {
 	nextNodeNum := len(caller.nextNodeList)
 	chosenNode := caller.nextNodeList[rand.Intn(nextNodeNum)]
 
 	userNum := len(chosenNode.userList)
 	chosenUser := chosenNode.userList[rand.Intn(userNum)]
 
-	return chosenNode.address, chosenUser
+	return chosenNode.destination, chosenUser
 }
 
 // encrypt request then send to chosen next node

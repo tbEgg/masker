@@ -169,6 +169,10 @@ func (r socks5UserPassRequest) verifyUser() byte {
 
 // third, client show the destination address
 const (
+	addrTypeIPv4   = byte(0x01)
+	addrTypeIPv6   = byte(0x04)
+	addrTypeDomain = byte(0x03)
+
 	cmdConnect		= byte(0x01)
 	cmdBind			= byte(0x02)
 	cmdUDPAssociate	= byte(0x03)
@@ -196,7 +200,7 @@ func readDestination(reader io.Reader) (request socks5ConfirmDestinationRequest,
 	request.addrType = buffer[3]
 
 	switch request.addrType {
-	case network.AddrTypeIPv4:
+	case addrTypeIPv4:
 		nBytes, err = reader.Read(request.ipv4[:])
 		if err != nil {
 			return
@@ -205,7 +209,7 @@ func readDestination(reader io.Reader) (request socks5ConfirmDestinationRequest,
 			err = fmt.Errorf("Failed to read complete IPv4 address")
 			return
 		}
-	case network.AddrTypeIPv6:
+	case addrTypeIPv6:
 		nBytes, err = reader.Read(request.ipv6[:])
 		if err != nil {
 			return
@@ -214,7 +218,7 @@ func readDestination(reader io.Reader) (request socks5ConfirmDestinationRequest,
 			err = fmt.Errorf("Failed to read complete IPv6 address")
 			return
 		}
-	case network.AddrTypeDomain:
+	case addrTypeDomain:
 		tmpBuffer := make([]byte, 256)
 		_, err = reader.Read(tmpBuffer[:1])
 		if err != nil {
@@ -288,11 +292,11 @@ func (r socks5ConfirmDestinationResponse) byteSlice() []byte {
 	buffer = append(buffer, r.version, r.statusCode, byte(0x00), r.addrType)
 
 	switch r.addrType {
-	case network.AddrTypeIPv4:
+	case addrTypeIPv4:
 		buffer = append(buffer, r.ipv4[:]...)
-	case network.AddrTypeIPv6:
+	case addrTypeIPv6:
 		buffer = append(buffer, r.ipv6[:]...)
-	case network.AddrTypeDomain:
+	case addrTypeDomain:
 		buffer = append(buffer, byte(len(r.domain)))
 		buffer = append(buffer, []byte(r.domain)...)
 	}
@@ -303,21 +307,23 @@ func (r socks5ConfirmDestinationResponse) byteSlice() []byte {
 	return buffer
 }
 
-func (r socks5ConfirmDestinationResponse) Destination() (dest network.Address, err error) {
+// ignore udp connection for the time being
+func (r socks5ConfirmDestinationResponse) Destination() (dest network.Destination, err error) {
+	var addr network.Address
 	switch r.addrType {
-	case network.AddrTypeIPv4:
-		dest = network.NewIPAddress(r.ipv4[:], r.port)
-		if dest.Type != network.AddrTypeIPv4 {
-			err = fmt.Errorf("Address %v is not a legal ipv4 address", r.ipv4)
+	case addrTypeIPv4:
+		addr, err = network.NewIPv4Address(r.ipv4[:], r.port)
+		if err != nil {
+			return nil, err
 		}
-	case network.AddrTypeIPv6:
-		dest = network.NewIPAddress(r.ipv6[:], r.port)
-		if dest.Type != network.AddrTypeIPv6 {
-			err = fmt.Errorf("Address %v is not a legal ipv6 address", r.ipv6)
+	case addrTypeIPv6:
+		addr, err = network.NewIPv6Address(r.ipv6[:], r.port)
+		if err != nil {
+			return nil, err
 		}
-	case network.AddrTypeDomain:
-		dest = network.NewDomainAddress(r.domain, r.port)
+	case addrTypeDomain:
+		addr = network.NewDomainAddress(r.domain, r.port)
 	}
 
-	return
+	return network.NewTCPDestination(addr), nil
 }

@@ -35,8 +35,14 @@ func (config nextNodeConfig) toNextNode() (nextNode, bool) {
 	if ip == nil {
 		panic(log.Error("Unable to parse ip: %v", config.Address))
 	}
-	address := network.NewIPAddress(ip, config.Port)
-	if address.Type == network.AddrTypeErr {
+	
+	var err error
+	var addr network.Address
+	addr, err = network.NewIPv4Address(ip, config.Port)
+	if err != nil {
+		addr, err = network.NewIPv6Address(ip, config.Port)
+	}
+	if err != nil {
 		panic(log.Error("Illegal ip: %v", config.Address))
 	}
 
@@ -52,8 +58,8 @@ func (config nextNodeConfig) toNextNode() (nextNode, bool) {
 	}
 
 	return nextNode{
-		address:	address,
-		userList:	users,
+		destination:	network.NewTCPDestination(addr),
+		userList:		users,
 	}, true
 }
 
