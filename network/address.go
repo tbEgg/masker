@@ -1,28 +1,27 @@
 package network
 
 import (
-	"net"
 	"errors"
+	"net"
 	"strconv"
 )
 
 var (
 	ErrIllegalIPv4Address = errors.New("illegal ipv4 address")
 	ErrIllegalIPv6Address = errors.New("illegal ipv6 address")
-
 )
 
 type Address interface {
-	IP()			net.IP
-	Domain()		string
-	Port()			uint16
-	PortByteSlice()	[]byte
+	IP() net.IP
+	Domain() string
+	Port() uint16
+	PortByteSlice() []byte
 
-	IsIPv4()	bool
-	IsIPv6()	bool
-	IsDomain()	bool
+	IsIPv4() bool
+	IsIPv6() bool
+	IsDomain() bool
 
-	String()	string
+	String() string
 }
 
 func NewIPv4Address(ip []byte, port uint16) (Address, error) {
@@ -32,8 +31,8 @@ func NewIPv4Address(ip []byte, port uint16) (Address, error) {
 	}
 
 	return ipv4Address{
-		portAddress:	portAddress(port),
-		ip:				actualIP,
+		portAddress: portAddress(port),
+		ip:          actualIP,
 	}, nil
 }
 
@@ -44,18 +43,17 @@ func NewIPv6Address(ip []byte, port uint16) (Address, error) {
 	}
 
 	return ipv6Address{
-		portAddress:	portAddress(port),
-		ip:				actualIP,
+		portAddress: portAddress(port),
+		ip:          actualIP,
 	}, nil
 }
 
 func NewDomainAddress(domain string, port uint16) Address {
 	return domainAddress{
-		portAddress:	portAddress(port),
-		domain:			domain,
+		portAddress: portAddress(port),
+		domain:      domain,
 	}
 }
-
 
 type portAddress uint16
 
@@ -83,7 +81,6 @@ func (port portAddress) String() string {
 	return strconv.Itoa(int(port))
 }
 
-
 type ipv4Address struct {
 	portAddress
 	ip net.IP
@@ -105,7 +102,6 @@ func (addr ipv4Address) String() string {
 	return addr.ip.String() + ":" + addr.portAddress.String()
 }
 
-
 type ipv6Address struct {
 	portAddress
 	ip net.IP
@@ -126,7 +122,6 @@ func (addr ipv6Address) IsIPv6() bool {
 func (addr ipv6Address) String() string {
 	return "[" + addr.ip.String() + "]:" + addr.portAddress.String()
 }
-
 
 type domainAddress struct {
 	portAddress

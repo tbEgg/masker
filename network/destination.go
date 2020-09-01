@@ -1,9 +1,8 @@
 package network
 
-
 // interface Destination implement interface net.Addr and Address
 type Destination interface {
-	Network()	string
+	Network() string
 	Address
 
 	IsTCP() bool
@@ -12,16 +11,15 @@ type Destination interface {
 
 func NewTCPDestination(address Address) Destination {
 	return tcpDestination{
-		Address:	address,
+		Address: address,
 	}
 }
 
 func NewUDPDestination(address Address) Destination {
 	return udpDestination{
-		Address:	address,
+		Address: address,
 	}
 }
-
 
 type tcpDestination struct {
 	Address
@@ -38,7 +36,6 @@ func (tcpDestination) IsTCP() bool {
 func (tcpDestination) IsUDP() bool {
 	return false
 }
-
 
 type udpDestination struct {
 	Address
