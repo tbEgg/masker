@@ -1,11 +1,11 @@
 package account
 
 type hashEntry struct {
-	userHash	string
-	timeSec		int64
+	userHash string
+	timeSec  int64
 }
 
-type hashEntryHeap	[]*hashEntry
+type hashEntryHeap []*hashEntry
 
 func (heap hashEntryHeap) Len() int {
 	return len(heap)
@@ -24,10 +24,10 @@ func (heap *hashEntryHeap) Push(x interface{}) {
 }
 
 func (heap *hashEntryHeap) Pop() interface{} {
-	old  := *heap
-	n    := len(old)
-	x    := old[n - 1]
-	*heap = old[:n - 1]
+	old := *heap
+	n := len(old)
+	x := old[n-1]
+	*heap = old[:n-1]
 	return x
 }
 

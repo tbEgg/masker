@@ -1,13 +1,13 @@
 package socks
 
 import (
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
 )
 
 type socksConfig struct {
-	Authentication	string	`json:"method"`
-	authMethod		byte
+	Authentication string `json:"method"`
+	authMethod     byte
 }
 
 func loadConfig(configFile string) (config socksConfig, err error) {
@@ -20,7 +20,7 @@ func loadConfig(configFile string) (config socksConfig, err error) {
 
 	if config.Authentication == "password" {
 		config.authMethod = authUserPass
-	}  else {
+	} else {
 		config.authMethod = authNotRequired
 	}
 	return

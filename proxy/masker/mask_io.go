@@ -1,17 +1,17 @@
 package masker
 
 import (
-	"io"
-	"fmt"
-	"time"
 	"encoding/binary"
+	"fmt"
+	"io"
+	"time"
 
-	mrand "math/rand"
 	cryptrand "crypto/rand"
+	mrand "math/rand"
 
-	"../../network"
 	"../../account"
 	"../../cryption"
+	"../../network"
 )
 
 const (
@@ -20,18 +20,18 @@ const (
 	addrTypeDomain = byte(0x02)
 )
 
-type maskRequest struct{
-	userID			*account.ID
-	requestKey		[16]byte
-	requestIV		[16]byte
-	responseHeader	[4]byte
-	dest			network.Destination
+type maskRequest struct {
+	userID         *account.ID
+	requestKey     [16]byte
+	requestIV      [16]byte
+	responseHeader [4]byte
+	dest           network.Destination
 }
 
 func newMaskRequest(u account.User, dest network.Destination) *maskRequest {
 	r := &maskRequest{
-		userID:	u.Id,
-		dest: 	dest,
+		userID: u.Id,
+		dest:   dest,
 	}
 	cryptrand.Read(r.requestKey[:])
 	cryptrand.Read(r.requestIV[:])
@@ -83,7 +83,7 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 
 	if err = skipRandomPadding(); err != nil {
 		return
-	} 
+	}
 
 	// key
 	nBytes, err = decryptReader.Read(request.requestKey[:])
@@ -155,7 +155,7 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 			err = fmt.Errorf("Unable read complete ip, want 16, get %d", nBytes)
 			return
 		}
-		
+
 		addr, err = network.NewIPv6Address(buffer[1:17], port)
 		if err != nil {
 			return
@@ -167,7 +167,7 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 		}
 
 		domainLen := int(buffer[1])
-		nBytes, err = decryptReader.Read(buffer[2:2 + domainLen])
+		nBytes, err = decryptReader.Read(buffer[2 : 2+domainLen])
 		if err != nil {
 			return
 		}
@@ -175,7 +175,7 @@ func readMaskRequest(reader io.Reader, userSet account.UserSet) (request *maskRe
 			err = fmt.Errorf("Unable read complete domain, want %d, get %d", domainLen, nBytes)
 			return
 		}
-		addr = network.NewDomainAddress(string(buffer[2:2 + domainLen]), port)
+		addr = network.NewDomainAddress(string(buffer[2:2+domainLen]), port)
 	default:
 		err = fmt.Errorf("Unsupported address type: %v", buffer[0])
 		return
@@ -200,12 +200,12 @@ func (r *maskRequest) encryptedByteSlice() ([]byte, error) {
 		if err != nil {
 			return err
 		}
-		
+
 		buffer = append(buffer, byte(randomPaddingLen))
 		buffer = append(buffer, randomPaddingContent...)
 		return nil
 	}
-	
+
 	if err := randomPadding(); err != nil {
 		return nil, err
 	}

@@ -6,14 +6,14 @@ import (
 	"./core"
 	"./log"
 
-	_ "./proxy/socks"
-	_ "./proxy/masker"
 	_ "./proxy/identical"
+	_ "./proxy/masker"
+	_ "./proxy/socks"
 )
 
 var (
-	configFile	string
-	logLevel	string
+	configFile string
+	logLevel   string
 )
 
 func init() {
@@ -46,7 +46,7 @@ func main() {
 		panic(log.Error("Err in creating a new node: %v.", err))
 	}
 	log.Info("Succceed creating the node.")
-	
+
 	err = node.Start()
 	if err != nil {
 		panic(log.Error("Err in starting node: %v.", err))

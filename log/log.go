@@ -1,23 +1,23 @@
 package log
 
 import (
+	"errors"
 	"fmt"
 	"log"
-	"errors"
 )
 
 type logLevel int
 
 const (
-	DebugLevel		= logLevel(0)
-	InfoLevel		= logLevel(1)
-	WarningLevel	= logLevel(2)
-	ErrorLevel		= logLevel(3)
+	DebugLevel   = logLevel(0)
+	InfoLevel    = logLevel(1)
+	WarningLevel = logLevel(2)
+	ErrorLevel   = logLevel(3)
 )
 
 const (
-	DebugStateLogFlag	= log.Ldate | log.Ltime | log.Lshortfile
-	ReleaseStateLogFlag	= log.LstdFlags
+	DebugStateLogFlag   = log.Ldate | log.Ltime | log.Lshortfile
+	ReleaseStateLogFlag = log.LstdFlags
 )
 
 func init() {
@@ -28,7 +28,7 @@ var curLogLevel = InfoLevel
 
 func SetCurLogLevel(level logLevel) {
 	curLogLevel = level
-	
+
 	if level == DebugLevel {
 		log.SetFlags(DebugStateLogFlag)
 	} else {

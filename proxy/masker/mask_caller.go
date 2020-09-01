@@ -1,26 +1,26 @@
 package masker
 
 import (
-	"io"
-	"net"
 	"bytes"
-	"math/rand"
 	"crypto/md5"
+	"io"
+	"math/rand"
+	"net"
 
-	"../../log"
-	"../../core"
-	"../../network"
 	"../../account"
+	"../../core"
 	"../../cryption"
+	"../../log"
+	"../../network"
 )
 
 type MaskCaller struct {
-	nextNodeList	[]nextNode	// list of nodes can be connected
+	nextNodeList []nextNode // list of nodes can be connected
 }
 
 type nextNode struct {
-	destination	network.Destination	// node ip address
-	userList	[]account.User	// users that node allows to access
+	destination network.Destination // node ip address
+	userList    []account.User      // users that node allows to access
 }
 
 func NewMaskCaller(configFile string) (*MaskCaller, error) {
@@ -39,9 +39,9 @@ func NewMaskCaller(configFile string) (*MaskCaller, error) {
 	if len(nextNodeList) == 0 {
 		return nil, log.Error("Check your config, don't find any accessible node!")
 	}
-	
+
 	return &MaskCaller{
-		nextNodeList:	nextNodeList,
+		nextNodeList: nextNodeList,
 	}, nil
 }
 
@@ -51,10 +51,10 @@ func NewMaskCaller(configFile string) (*MaskCaller, error) {
  *
  * dest: final target address
  *
-*/
+ */
 func (caller *MaskCaller) Call(channel core.FullDuplexChannel, dest network.Destination) error {
 	nextNodeDestination, chosenUser := caller.pickNextNode()
-	
+
 	conn, err := net.Dial(nextNodeDestination.Network(), nextNodeDestination.String())
 	if err != nil {
 		log.Error("Err in opening %s connection: %v.", nextNodeDestination.Network(), err)
@@ -107,14 +107,14 @@ func sendRequest(writer io.Writer, channel core.HalfDuplexChannel, finish chan<-
 			return err
 		}
 		encryptWriter.Encrypt(payload)
-		
+
 		firstPacket := append(encryptedRequest, payload...)
 		_, err = writer.Write(firstPacket)
 		if err != nil {
 			log.Error("Err in send first packet: %v", err)
 			return err
 		}
-		
+
 		// than send other
 		go channel.Output(encryptWriter, finish)
 	} else {

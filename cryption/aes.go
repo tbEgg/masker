@@ -1,16 +1,16 @@
 package cryption
 
 import (
-	"io"
 	"crypto/aes"
 	"crypto/cipher"
+	"io"
 
 	"../log"
 )
 
 type AESEncryptWriter struct {
-	stream	cipher.Stream
-	writer	io.Writer
+	stream cipher.Stream
+	writer io.Writer
 }
 
 func NewAESEncryptWriter(writer io.Writer, key []byte, iv []byte) (*AESEncryptWriter, error) {
@@ -19,8 +19,8 @@ func NewAESEncryptWriter(writer io.Writer, key []byte, iv []byte) (*AESEncryptWr
 		return nil, err
 	}
 	return &AESEncryptWriter{
-		stream:	aesStream,
-		writer:	writer,
+		stream: aesStream,
+		writer: writer,
 	}, nil
 }
 
@@ -44,10 +44,9 @@ func (encrytWriter *AESEncryptWriter) Write(blocks []byte) (int, error) {
 	return encrytWriter.writer.Write(blocks)
 }
 
-
 type AESDecryptReader struct {
-	stream	cipher.Stream
-	reader	io.Reader
+	stream cipher.Stream
+	reader io.Reader
 }
 
 func NewAESDecryptReader(reader io.Reader, key []byte, iv []byte) (*AESDecryptReader, error) {
@@ -56,8 +55,8 @@ func NewAESDecryptReader(reader io.Reader, key []byte, iv []byte) (*AESDecryptRe
 		return nil, err
 	}
 	return &AESDecryptReader{
-		stream:	aesStream,
-		reader:	reader,
+		stream: aesStream,
+		reader: reader,
 	}, nil
 }
 

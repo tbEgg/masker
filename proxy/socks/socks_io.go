@@ -1,9 +1,9 @@
 package socks
 
 import (
-	"io"
-	"fmt"
 	"encoding/binary"
+	"fmt"
+	"io"
 
 	"../../network"
 )
@@ -13,19 +13,19 @@ func canNotBeIgnoredErr(err error) bool {
 }
 
 const (
-	socksVersion	= byte(0x05)
+	socksVersion = byte(0x05)
 
-	authNotRequired	= byte(0x00)
-	authGssApi		= byte(0x01)
-	authUserPass	= byte(0x02)
-	authNoAcceptableMethod	= byte(0xFF)
+	authNotRequired        = byte(0x00)
+	authGssApi             = byte(0x01)
+	authUserPass           = byte(0x02)
+	authNoAcceptableMethod = byte(0xFF)
 )
 
 // first, client request to build the link
 type socks5AuthenticationRequest struct {
-	version				byte
-	nMethods			byte
-	supportedMethods	[256]byte	// methods client support
+	version          byte
+	nMethods         byte
+	supportedMethods [256]byte // methods client support
 }
 
 func (r socks5AuthenticationRequest) hasSupportedMethod(method byte) bool {
@@ -61,8 +61,8 @@ func readAuthentication(reader io.Reader) (request socks5AuthenticationRequest, 
 		return
 	}
 
-	if nBytes - 2 != int(request.nMethods) {
-		err = fmt.Errorf("Unmatching number of auth methods, expecting %d, but got %d", request.nMethods, nBytes - 2)
+	if nBytes-2 != int(request.nMethods) {
+		err = fmt.Errorf("Unmatching number of auth methods, expecting %d, but got %d", request.nMethods, nBytes-2)
 		return
 	}
 
@@ -81,8 +81,8 @@ func writeResponse(writer io.Writer, data byteSlicer) error {
 }
 
 type socks5AuthenticationResponse struct {
-	version	byte
-	method	byte
+	version byte
+	method  byte
 }
 
 func (r socks5AuthenticationResponse) byteSlice() []byte {
@@ -92,15 +92,15 @@ func (r socks5AuthenticationResponse) byteSlice() []byte {
 func newAuthenticationResponse(method byte) socks5AuthenticationResponse {
 	return socks5AuthenticationResponse{
 		version: socksVersion,
-		method: method,
+		method:  method,
 	}
 }
 
 // choose use password auth method
 type socks5UserPassRequest struct {
-	version 	byte
-	username	string
-	password	string
+	version  byte
+	username string
+	password string
 }
 
 func readUserPass(reader io.Reader) (request socks5UserPassRequest, err error) {
@@ -143,7 +143,7 @@ func readUserPass(reader io.Reader) (request socks5UserPassRequest, err error) {
 // server authenticates
 type socks5UserPassResponse struct {
 	version byte
-	status	byte
+	status  byte
 }
 
 func (r socks5UserPassResponse) byteSlice() []byte {
@@ -153,12 +153,12 @@ func (r socks5UserPassResponse) byteSlice() []byte {
 func newUserPassResponse(status byte) socks5UserPassResponse {
 	return socks5UserPassResponse{
 		version: socksVersion,
-		status: status,
+		status:  status,
 	}
 }
 
 const (
-	validUser	= byte(iota)
+	validUser = byte(iota)
 	invalidUser
 )
 
@@ -173,19 +173,19 @@ const (
 	addrTypeIPv6   = byte(0x04)
 	addrTypeDomain = byte(0x03)
 
-	cmdConnect		= byte(0x01)
-	cmdBind			= byte(0x02)
-	cmdUDPAssociate	= byte(0x03)
+	cmdConnect      = byte(0x01)
+	cmdBind         = byte(0x02)
+	cmdUDPAssociate = byte(0x03)
 )
 
 type socks5ConfirmDestinationRequest struct {
-	version		byte
-	command		byte
-	addrType	byte
-	ipv4		[4]byte
-	ipv6		[16]byte
-	domain		string
-	port		uint16
+	version  byte
+	command  byte
+	addrType byte
+	ipv4     [4]byte
+	ipv6     [16]byte
+	domain   string
+	port     uint16
 }
 
 func readDestination(reader io.Reader) (request socks5ConfirmDestinationRequest, err error) {
@@ -195,8 +195,8 @@ func readDestination(reader io.Reader) (request socks5ConfirmDestinationRequest,
 		return
 	}
 
-	request.version  = buffer[0]
-	request.command  = buffer[1]
+	request.version = buffer[0]
+	request.command = buffer[1]
 	request.addrType = buffer[3]
 
 	switch request.addrType {
@@ -224,7 +224,7 @@ func readDestination(reader io.Reader) (request socks5ConfirmDestinationRequest,
 		if err != nil {
 			return
 		}
-		
+
 		domainLen := int(tmpBuffer[0])
 		nBytes, err = reader.Read(tmpBuffer[:domainLen])
 		if err != nil {
@@ -266,29 +266,29 @@ const (
 )
 
 type socks5ConfirmDestinationResponse struct {
-	version 	byte
-	statusCode	byte
-	addrType	byte
-	ipv4		[4]byte
-	ipv6		[16]byte
-	domain		string
-	port		uint16
+	version    byte
+	statusCode byte
+	addrType   byte
+	ipv4       [4]byte
+	ipv6       [16]byte
+	domain     string
+	port       uint16
 }
 
 func newConfirmDestinationResponse(r socks5ConfirmDestinationRequest) socks5ConfirmDestinationResponse {
 	return socks5ConfirmDestinationResponse{
-		version: 	r.version,
-		statusCode:	statusSucceed,
-		addrType:	r.addrType,
-		ipv4:		r.ipv4,
-		ipv6:		r.ipv6,
-		domain:		r.domain,
-		port:		r.port,
+		version:    r.version,
+		statusCode: statusSucceed,
+		addrType:   r.addrType,
+		ipv4:       r.ipv4,
+		ipv6:       r.ipv6,
+		domain:     r.domain,
+		port:       r.port,
 	}
 }
 
 func (r socks5ConfirmDestinationResponse) byteSlice() []byte {
-	buffer := make ([]byte, 0, 300)
+	buffer := make([]byte, 0, 300)
 	buffer = append(buffer, r.version, r.statusCode, byte(0x00), r.addrType)
 
 	switch r.addrType {

@@ -1,13 +1,13 @@
 package masker
 
 import (
-	"net"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"net"
 
+	"../../account"
 	"../../log"
 	"../../network"
-	"../../account"
 )
 
 func loadCallerConfig(configFile string) (config []nextNodeConfig, err error) {
@@ -21,9 +21,9 @@ func loadCallerConfig(configFile string) (config []nextNodeConfig, err error) {
 }
 
 type nextNodeConfig struct {
-	Address		string			`json:"address"`
-	Port		uint16			`json:"port"`
-	UserList	[]userConfig	`json:"users"`
+	Address  string       `json:"address"`
+	Port     uint16       `json:"port"`
+	UserList []userConfig `json:"users"`
 }
 
 type userConfig struct {
@@ -35,7 +35,7 @@ func (config nextNodeConfig) toNextNode() (nextNode, bool) {
 	if ip == nil {
 		panic(log.Error("Unable to parse ip: %v", config.Address))
 	}
-	
+
 	var err error
 	var addr network.Address
 	addr, err = network.NewIPv4Address(ip, config.Port)
@@ -58,8 +58,8 @@ func (config nextNodeConfig) toNextNode() (nextNode, bool) {
 	}
 
 	return nextNode{
-		destination:	network.NewTCPDestination(addr),
-		userList:		users,
+		destination: network.NewTCPDestination(addr),
+		userList:    users,
 	}, true
 }
 
@@ -81,5 +81,5 @@ func loadListenerConfig(configFile string) (config listenerConfig, err error) {
 }
 
 type listenerConfig struct {
-	UserList	[]userConfig	`json:"users"`
+	UserList []userConfig `json:"users"`
 }

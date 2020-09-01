@@ -1,19 +1,19 @@
 package masker
 
 import (
+	"crypto/md5"
 	"net"
 	"strconv"
-	"crypto/md5"
 
-	"../../log"
-	"../../core"
 	"../../account"
+	"../../core"
 	"../../cryption"
+	"../../log"
 )
 
 type MaskListener struct {
-	node	*core.Node
-	userSet	account.UserSet
+	node    *core.Node
+	userSet account.UserSet
 }
 
 func NewMaskListener(node *core.Node, configFile string) (*MaskListener, error) {
@@ -39,13 +39,13 @@ func NewMaskListener(node *core.Node, configFile string) (*MaskListener, error) 
 	}
 
 	return &MaskListener{
-		node:		node,
-		userSet:	userSet,
+		node:    node,
+		userSet: userSet,
 	}, nil
 }
 
 func (listener *MaskListener) Listen(port uint16) error {
-	ln, err := net.Listen("tcp", ":" + strconv.Itoa(int(port)))
+	ln, err := net.Listen("tcp", ":"+strconv.Itoa(int(port)))
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (listener *MaskListener) handleConnection(conn net.Conn) error {
 		log.Error("Err in calling destination: %v", err)
 		return err
 	}
-	readFinish  := make(chan bool, 1)
+	readFinish := make(chan bool, 1)
 	writeFinish := make(chan bool, 1)
 
 	// transmit request
@@ -113,6 +113,6 @@ func (listener *MaskListener) handleConnection(conn net.Conn) error {
 	} else {
 		log.Error("Err in first response block.")
 	}
-	
+
 	return nil
 }

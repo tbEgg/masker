@@ -1,8 +1,8 @@
 package cryption
 
 import (
-	"crypto/md5"
 	"crypto/hmac"
+	"crypto/md5"
 )
 
 func TimeHMACHash(key []byte, timeSec int64) []byte {

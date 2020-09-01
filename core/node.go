@@ -6,9 +6,9 @@ import (
 )
 
 type Node struct {
-	ListenEnd	Listener
-	CallEnd		Caller
-	Config		NodeConfig
+	ListenEnd Listener
+	CallEnd   Caller
+	Config    NodeConfig
 }
 
 type Listener interface {
@@ -26,7 +26,6 @@ type ListenerConstructor interface {
 type CallerConstructor interface {
 	Create(string) (Caller, error)
 }
-
 
 func NewNode(config NodeConfig) (*Node, error) {
 	node := new(Node)
@@ -57,8 +56,8 @@ func NewNode(config NodeConfig) (*Node, error) {
 }
 
 var (
-	listenerConstructorSet	= make(map[string]ListenerConstructor)
-	callerConstructorSet	= make(map[string]CallerConstructor)
+	listenerConstructorSet = make(map[string]ListenerConstructor)
+	callerConstructorSet   = make(map[string]CallerConstructor)
 )
 
 func RegisterListenerConstructor(protocol string, constructor ListenerConstructor) {

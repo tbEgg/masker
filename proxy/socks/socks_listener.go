@@ -4,13 +4,13 @@ import (
 	"net"
 	"strconv"
 
-	"../../log"
 	"../../core"
+	"../../log"
 )
 
 type SocksListener struct {
-	node	*core.Node
-	config 	socksConfig
+	node   *core.Node
+	config socksConfig
 }
 
 func NewSocksListener(node *core.Node, configFile string) (*SocksListener, error) {
@@ -19,13 +19,13 @@ func NewSocksListener(node *core.Node, configFile string) (*SocksListener, error
 		return nil, err
 	}
 	return &SocksListener{
-		node: node,
+		node:   node,
 		config: config,
 	}, nil
 }
 
 func (listener *SocksListener) Listen(port uint16) error {
-	ln, err := net.Listen("tcp", ":" + strconv.Itoa(int(port)))
+	ln, err := net.Listen("tcp", ":"+strconv.Itoa(int(port)))
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (listener *SocksListener) handleConnection(conn net.Conn) error {
 		log.Error("Err in calling destination: %v.", err)
 		return err
 	}
-	
+
 	readFinish := make(chan bool, 1)
 	go channel.ForwardChannel.Input(conn, readFinish)
 

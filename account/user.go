@@ -1,8 +1,8 @@
 package account
 
 import (
-	"time"
 	"container/heap"
+	"time"
 
 	"../cryption"
 )
@@ -13,7 +13,7 @@ const (
 )
 
 type User struct {
-	Id	*ID	`json:"id"`
+	Id *ID `json:"id"`
 }
 
 type UserSet interface {
@@ -22,21 +22,21 @@ type UserSet interface {
 }
 
 type TimedUserSet struct {
-	validUserIdList		[]*ID
-	userHashMap			map[string]indexTimePair
-	userHashEntryHeap	*hashEntryHeap
+	validUserIdList   []*ID
+	userHashMap       map[string]indexTimePair
+	userHashEntryHeap *hashEntryHeap
 }
 
 type indexTimePair struct {
-	userIndex	int
-	timeSec 	int64
+	userIndex int
+	timeSec   int64
 }
 
 func NewTimedUserSet(userList ...User) (UserSet, error) {
 	userSet := new(TimedUserSet)
 	userSet.userHashMap = make(map[string]indexTimePair)
 	userSet.userHashEntryHeap = newHashEntryHeap(100)
-	
+
 	userSet.validUserIdList = make([]*ID, 0, len(userList))
 	for _, user := range userList {
 		userSet.validUserIdList = append(userSet.validUserIdList, user.Id)
@@ -56,7 +56,7 @@ func NewTimedUserSet(userList ...User) (UserSet, error) {
  */
 func (userSet *TimedUserSet) updateUserHash(tick <-chan time.Time) {
 	now := time.Now()
-	
+
 	// timeSecWillBeHashed is the next time sec that will be used to generate user hash
 	// time before "timeSecWillBeHashed" has been used
 	timeSecWillBeHashed := now.Unix() - cacheDurationSec
@@ -69,7 +69,7 @@ func (userSet *TimedUserSet) updateUserHash(tick <-chan time.Time) {
 		// problem:
 		// first tick does not come immediately, userHashMap is empty during this time
 		// so, request arrives too early will be denied because listener can not find the corresponding user hash
-		now = <- tick
+		now = <-tick
 		curTimeSec := now.Unix()
 
 		// time sec before "timeSecLoseTimeliness" are all too old to lose timeliness
@@ -94,7 +94,7 @@ func (userSet *TimedUserSet) updateUserHash(tick <-chan time.Time) {
 
 func (userSet *TimedUserSet) generateNewUserHash(timeSecWillBeHashed, curTimeSec int64, userIndex int) {
 	userIdBytes := userSet.validUserIdList[userIndex].Bytes
-	for ;timeSecWillBeHashed < curTimeSec + cacheDurationSec; timeSecWillBeHashed++ {
+	for ; timeSecWillBeHashed < curTimeSec+cacheDurationSec; timeSecWillBeHashed++ {
 		userHash := string(cryption.TimeHMACHash(userIdBytes, timeSecWillBeHashed))
 		userSet.userHashMap[userHash] = indexTimePair{userIndex, timeSecWillBeHashed}
 		heap.Push(userSet.userHashEntryHeap, &hashEntry{userHash, timeSecWillBeHashed})
@@ -106,7 +106,7 @@ func (userSet *TimedUserSet) AddUser(user User) error {
 	userSet.validUserIdList = append(userSet.validUserIdList, user.Id)
 
 	curTimeSec := time.Now().Unix()
-	go userSet.generateNewUserHash(curTimeSec - cacheDurationSec, curTimeSec, userIndex)
+	go userSet.generateNewUserHash(curTimeSec-cacheDurationSec, curTimeSec, userIndex)
 	return nil
 }
 

@@ -3,8 +3,8 @@ package identical
 import (
 	"net"
 
-	"../../log"
 	"../../core"
+	"../../log"
 	"../../network"
 )
 

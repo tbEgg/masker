@@ -2,26 +2,25 @@ package core
 
 import (
 	"io"
-	
 	// "../log"
 )
 
 const (
 	channelSize = 100
-	bufferSize	= 1024 * 32
+	bufferSize  = 1024 * 32
 )
 
 type FullDuplexChannel struct {
-	ForwardChannel	HalfDuplexChannel
-	BackwardChannel	HalfDuplexChannel
+	ForwardChannel  HalfDuplexChannel
+	BackwardChannel HalfDuplexChannel
 }
 
 type HalfDuplexChannel chan []byte
 
 func NewFullDuplexChannel() FullDuplexChannel {
 	return FullDuplexChannel{
-		ForwardChannel:		make(HalfDuplexChannel, channelSize),
-		BackwardChannel:	make(HalfDuplexChannel, channelSize),
+		ForwardChannel:  make(HalfDuplexChannel, channelSize),
+		BackwardChannel: make(HalfDuplexChannel, channelSize),
 	}
 }
 
@@ -50,7 +49,7 @@ func (ch HalfDuplexChannel) Input(reader io.Reader, finish chan<- bool) {
 			finish <- false
 			return
 		}
-		
+
 	}
 	finish <- true
 }

@@ -12,9 +12,9 @@ const (
 )
 
 type ID struct {
-	Text	string
-	Bytes	[]byte
-	cmdKey	[]byte
+	Text   string
+	Bytes  []byte
+	cmdKey []byte
 }
 
 func NewID(id string) (*ID, error) {
@@ -29,9 +29,9 @@ func NewID(id string) (*ID, error) {
 	key := md5Hash.Sum(nil)
 
 	return &ID{
-		Text:	id,
-		Bytes:	idBytes,
-		cmdKey:	key[:],
+		Text:   id,
+		Bytes:  idBytes,
+		cmdKey: key[:],
 	}, nil
 }
 
