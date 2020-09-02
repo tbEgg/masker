@@ -2,7 +2,6 @@ package core
 
 import (
 	"io"
-	// "../log"
 )
 
 const (
@@ -37,6 +36,8 @@ func (ch HalfDuplexChannel) Push(data []byte) {
 
 // data flow: reader -> channel
 func (ch HalfDuplexChannel) Input(reader io.Reader, finish chan<- bool) {
+	defer close(ch)
+
 	for {
 		buffer := make([]byte, bufferSize)
 		nBytes, err := reader.Read(buffer)
@@ -49,7 +50,6 @@ func (ch HalfDuplexChannel) Input(reader io.Reader, finish chan<- bool) {
 			finish <- false
 			return
 		}
-
 	}
 	finish <- true
 }
