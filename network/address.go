@@ -24,8 +24,14 @@ type Address interface {
 	String() string
 }
 
+func NewNetIP(ip []byte) net.IP {
+	tmpIP := make([]byte, len(ip))
+	copy(tmpIP, ip)
+	return net.IP(tmpIP)
+}
+
 func NewIPv4Address(ip []byte, port uint16) (Address, error) {
-	actualIP := net.IP(ip).To4()
+	actualIP := NewNetIP(ip).To4()
 	if actualIP == nil {
 		return nil, ErrIllegalIPv4Address
 	}
@@ -37,7 +43,7 @@ func NewIPv4Address(ip []byte, port uint16) (Address, error) {
 }
 
 func NewIPv6Address(ip []byte, port uint16) (Address, error) {
-	actualIP := net.IP(ip).To16()
+	actualIP := NewNetIP(ip).To16()
 	if actualIP == nil {
 		return nil, ErrIllegalIPv6Address
 	}
