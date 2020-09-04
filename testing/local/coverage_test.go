@@ -1,7 +1,6 @@
 package local
 
 import (
-	"io/ioutil"
 	"net"
 	"strconv"
 	"testing"
@@ -28,7 +27,7 @@ var (
 )
 
 func TestRunningLocally(t *testing.T) {
-	log.SetCurLogLevel(log.ErrorLevel)
+	log.SetCurLogLevel(log.InfoLevel)
 
 	// init client node and server node
 	go startNode(t, "server_a_config.json")
@@ -56,23 +55,31 @@ func TestRunningLocally(t *testing.T) {
 	// finally dial the target server
 	// send the request and receive the response
 	conn, err := socks5Client.Dial("tcp", targetAdress)
-	_, err = conn.Write(request)
 	if err != nil {
-		t.Fatalf("Socks5 client: err in sending request: %v", err)
+		t.Fatalf("Socks5 client: err in dialing the target server: %v", err)
 	}
-	if tcpConn, ok := conn.(*net.TCPConn); ok {
-		tcpConn.CloseWrite()
-	}
-	t.Logf("Socks5 client: sending resquest: %s", string(request))
 
-	receivedResponse, err := ioutil.ReadAll(conn)
-	if err != nil {
-		t.Errorf("Socks5 client: err in reading response: %v", err)
+	buffer := make([]byte, 512)
+	for i := 0; i < 5; i++ {
+		t.Logf("Socks5 client: %d's times...", i)
+
+		_, err = conn.Write(request)
+		if err != nil {
+			t.Errorf("Socks5 client: err in sending request: %v", err)
+			continue
+		}
+		t.Logf("Socks5 client: sending resquest: %s", string(request))
+
+		nBytes, _ := conn.Read(buffer)
+		if cmp.Equal(buffer[:nBytes], response) == false {
+			t.Errorf("Socks5 client: err in reading response, want %s but get %s.", string(response), string(buffer[:nBytes]))
+			continue
+		}
+		t.Logf("Socks5 client: receiving response: %s", string(response))
+
+		time.Sleep(5e8)
 	}
-	if cmp.Equal(receivedResponse, response) == false {
-		t.Errorf("Socks5 client: err in reading response, want %s but get %s", string(response), string(receivedResponse))
-	}
-	t.Logf("End...")
+
 	conn.Close()
 }
 
@@ -101,24 +108,27 @@ func startServer(t *testing.T) {
 		}
 	}
 
-	// read request
 	buffer := make([]byte, 512)
-	nBytes, err := conn.Read(buffer)
-	if err != nil {
-		t.Errorf("Target server: err in reading request: %v", err)
-	}
+	for i := 0; i < 5; i++ {
+		t.Logf("Target server: %d's times", i)
 
-	if cmp.Equal(buffer[:nBytes], request) == false {
-		t.Fatalf("Target server: err in reading request, want %s but get %s", string(request), string(buffer[:nBytes]))
-	}
-	t.Logf("Target server: receiving request: %s", string(request))
+		// read request
+		nBytes, err := conn.Read(buffer)
+		if cmp.Equal(buffer[:nBytes], request) == false {
+			t.Errorf("Target server: err in reading request, want %s but get %s", string(request), string(buffer[:nBytes]))
+			continue
+		}
+		t.Logf("Target server: receiving request: %s", string(request))
 
-	// send response
-	_, err = conn.Write(response)
-	if err != nil {
-		t.Errorf("Target server: err in sending response: %v", err)
+		// send response
+		_, err = conn.Write(response)
+		if err != nil {
+			t.Errorf("Target server: err in sending response: %v", err)
+		}
+		t.Logf("Target server: sending response: %s", string(response))
+
+		time.Sleep(5e8)
 	}
-	t.Logf("Target server: sending response: %s", string(response))
 
 	conn.Close()
 	ln.Close()

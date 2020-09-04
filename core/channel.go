@@ -2,11 +2,13 @@ package core
 
 import (
 	"io"
+	"time"
 )
 
 const (
 	channelSize = 100
-	bufferSize  = 1024 * 32
+	bufferSize  = 1024 * 4
+	timeoutSec  = 60e9
 )
 
 type FullDuplexChannel struct {
@@ -14,35 +16,55 @@ type FullDuplexChannel struct {
 	BackwardChannel HalfDuplexChannel
 }
 
-type HalfDuplexChannel chan []byte
+type HalfDuplexChannel interface {
+	Pop() ([]byte, bool)
+	Push([]byte)
+	Input(reader io.Reader, finish chan<- bool)
+	Output(writer io.Writer, finish chan<- bool)
+}
 
 func NewFullDuplexChannel() FullDuplexChannel {
 	return FullDuplexChannel{
-		ForwardChannel:  make(HalfDuplexChannel, channelSize),
-		BackwardChannel: make(HalfDuplexChannel, channelSize),
+		ForwardChannel:  newTimedHalfDuplexChannel(channelSize, timeoutSec),
+		BackwardChannel: newTimedHalfDuplexChannel(channelSize, timeoutSec),
 	}
 }
 
-func (ch HalfDuplexChannel) Pop() ([]byte, bool) {
-	data, ok := <-ch
-	return data, ok
+// timedHalfDuplexChannel implement interface HalfDuplexChannel
+type timedHalfDuplexChannel struct {
+	data       chan []byte
+	timeoutSec time.Duration
 }
 
-func (ch HalfDuplexChannel) Push(data []byte) {
+func newTimedHalfDuplexChannel(channelSize int, timeoutSec time.Duration) *timedHalfDuplexChannel {
+	return &timedHalfDuplexChannel{
+		data:       make(chan []byte, channelSize),
+		timeoutSec: timeoutSec,
+	}
+}
+
+func (ch *timedHalfDuplexChannel) Pop() ([]byte, bool) {
+	select {
+	case data, ok := <-ch.data:
+		return data, ok
+	case <-time.After(ch.timeoutSec):
+		return nil, false
+	}
+}
+
+func (ch *timedHalfDuplexChannel) Push(data []byte) {
 	go func() {
-		ch <- data
+		ch.data <- data
 	}()
 }
 
 // data flow: reader -> channel
-func (ch HalfDuplexChannel) Input(reader io.Reader, finish chan<- bool) {
-	defer close(ch)
-
+func (ch *timedHalfDuplexChannel) Input(reader io.Reader, finish chan<- bool) {
+	buffer := make([]byte, bufferSize)
 	for {
-		buffer := make([]byte, bufferSize)
 		nBytes, err := reader.Read(buffer)
 		if nBytes > 0 {
-			ch <- buffer[:nBytes]
+			ch.data <- buffer[:nBytes]
 		}
 		if err == io.EOF {
 			break
@@ -55,13 +77,27 @@ func (ch HalfDuplexChannel) Input(reader io.Reader, finish chan<- bool) {
 }
 
 // data flow: channel -> writer
-func (ch HalfDuplexChannel) Output(writer io.Writer, finish chan<- bool) {
-	for buffer := range ch {
-		_, err := writer.Write(buffer)
-		if err != nil {
-			finish <- false
+func (ch *timedHalfDuplexChannel) Output(writer io.Writer, finish chan<- bool) {
+	for {
+		select {
+		case buffer := <-ch.data:
+			_, err := writer.Write(buffer)
+			if err != nil {
+				finish <- false
+				return
+			}
+		case <-time.After(ch.timeoutSec):
+			close(ch.data)
+			finish <- true
 			return
 		}
 	}
-	finish <- true
+}
+
+type Timer interface {
+	SetTimeoutSec(timeoutSec time.Duration)
+}
+
+func (ch *timedHalfDuplexChannel) SetTimeoutSec(timeoutSec time.Duration) {
+	ch.timeoutSec = timeoutSec
 }
