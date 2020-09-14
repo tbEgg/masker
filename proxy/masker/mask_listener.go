@@ -114,5 +114,6 @@ func (listener *MaskListener) handleConnection(conn net.Conn) error {
 		log.Error("Err in first response block.")
 	}
 
+	<-readFinish
 	return nil
 }
