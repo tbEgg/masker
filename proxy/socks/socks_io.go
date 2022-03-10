@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"../../network"
+	"masker/network"
 )
 
 func canNotBeIgnoredErr(err error) bool {

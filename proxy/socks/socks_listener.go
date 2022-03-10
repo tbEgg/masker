@@ -4,8 +4,8 @@ import (
 	"net"
 	"strconv"
 
-	"../../core"
-	"../../log"
+	"masker/core"
+	"masker/log"
 )
 
 type SocksListener struct {

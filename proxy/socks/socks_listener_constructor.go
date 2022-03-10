@@ -1,7 +1,7 @@
 package socks
 
 import (
-	"../../core"
+	"masker/core"
 )
 
 type SocksListenerConstructor struct{}

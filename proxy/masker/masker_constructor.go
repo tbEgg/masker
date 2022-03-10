@@ -1,7 +1,7 @@
 package masker
 
 import (
-	"../../core"
+	"masker/core"
 )
 
 type MaskCallerConstructor struct{}

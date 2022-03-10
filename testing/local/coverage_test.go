@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"../../core"
-	"../../log"
+	"masker/core"
+	"masker/log"
 
 	"github.com/google/go-cmp/cmp"
 	"golang.org/x/net/proxy"
 
-	_ "../../proxy/identical"
-	_ "../../proxy/masker"
-	_ "../../proxy/socks"
+	_ "masker/proxy/identical"
+	_ "masker/proxy/masker"
+	_ "masker/proxy/socks"
 )
 
 const (

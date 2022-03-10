@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 
-	"./core"
-	"./log"
+	"masker/core"
+	"masker/log"
 
-	_ "./proxy/identical"
-	_ "./proxy/masker"
-	_ "./proxy/socks"
+	_ "masker/proxy/identical"
+	_ "masker/proxy/masker"
+	_ "masker/proxy/socks"
 )
 
 var (

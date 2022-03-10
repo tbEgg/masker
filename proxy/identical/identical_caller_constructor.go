@@ -1,7 +1,7 @@
 package identical
 
 import (
-	"../../core"
+	"masker/core"
 )
 
 type IdenticalCallerConstructor struct{}

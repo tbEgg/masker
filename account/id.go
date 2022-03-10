@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 
-	"../log"
+	"masker/log"
 )
 
 const (

@@ -7,11 +7,11 @@ import (
 	"math/rand"
 	"net"
 
-	"../../account"
-	"../../core"
-	"../../cryption"
-	"../../log"
-	"../../network"
+	"masker/account"
+	"masker/core"
+	"masker/cryption"
+	"masker/log"
+	"masker/network"
 )
 
 type MaskCaller struct {

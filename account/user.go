@@ -4,7 +4,7 @@ import (
 	"container/heap"
 	"time"
 
-	"../cryption"
+	"masker/cryption"
 )
 
 const (

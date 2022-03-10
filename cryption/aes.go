@@ -5,7 +5,7 @@ import (
 	"crypto/cipher"
 	"io"
 
-	"../log"
+	"masker/log"
 )
 
 type AESEncryptWriter struct {

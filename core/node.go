@@ -1,8 +1,9 @@
 package core
 
 import (
-	"../log"
-	"../network"
+	"masker/log"
+
+	"masker/network"
 )
 
 type Node struct {

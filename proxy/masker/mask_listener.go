@@ -5,10 +5,10 @@ import (
 	"net"
 	"strconv"
 
-	"../../account"
-	"../../core"
-	"../../cryption"
-	"../../log"
+	"masker/account"
+	"masker/core"
+	"masker/cryption"
+	"masker/log"
 )
 
 type MaskListener struct {

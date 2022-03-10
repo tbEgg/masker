@@ -3,9 +3,9 @@ package identical
 import (
 	"net"
 
-	"../../core"
-	"../../log"
-	"../../network"
+	"masker/core"
+	"masker/log"
+	"masker/network"
 )
 
 type IdenticalCaller struct {

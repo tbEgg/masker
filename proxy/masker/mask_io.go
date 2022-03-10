@@ -9,9 +9,9 @@ import (
 	cryptrand "crypto/rand"
 	mrand "math/rand"
 
-	"../../account"
-	"../../cryption"
-	"../../network"
+	"masker/account"
+	"masker/cryption"
+	"masker/network"
 )
 
 const (

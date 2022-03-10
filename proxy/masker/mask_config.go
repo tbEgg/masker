@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"net"
 
-	"../../account"
-	"../../log"
-	"../../network"
+	"masker/account"
+	"masker/log"
+	"masker/network"
 )
 
 func loadCallerConfig(configFile string) (config []nextNodeConfig, err error) {

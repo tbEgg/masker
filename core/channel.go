@@ -4,7 +4,7 @@ import (
 	"io"
 	"time"
 
-	"../log"
+	"masker/log"
 )
 
 const (
